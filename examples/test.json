@@ -1,0 +1,43 @@
+{
+    "requestType":"planning",
+    "actionType":"pick",
+    "input":
+    {
+        "agents":
+        {
+            "agent1":
+            {
+                "key":"mainAgent",
+                "value":"PR2_ROBOT"
+            }
+        },
+        "objects":
+        {
+            "object1":
+            {
+                "key":"mainObject",
+                "value":"RED_CUBE"
+            }
+        },
+        "datas":
+        {
+            "data1":
+            {
+                "key":"hand",
+                "value":"right"
+            }
+        },
+        "points":
+        {
+            "point1":
+            {
+                "key":"target",
+                "value":[0,0,0]
+            }
+        }
+    },
+    "previousId":0,
+    "previousAltId":0
+    
+}
+

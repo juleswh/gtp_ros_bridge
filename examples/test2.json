@@ -1,0 +1,32 @@
+{
+    "requestType":"planning",
+    "actionType":"place",
+    "input":
+    {
+        "agents":
+        {
+            "agent1":
+            {
+                "key":"mainAgent",
+                "value":"PR2_ROBOT"
+            }
+        },
+        "objects":
+        {
+            "object1":
+            {
+                "key":"mainObject",
+                "value":"RED_CUBE"
+            },
+            "object2":
+            {
+                "key":"supportObject",
+                "value":"MANIP_TABLE"
+            }
+        }
+    },
+    "previousId":0,
+    "previousAltId":0
+    
+}
+
