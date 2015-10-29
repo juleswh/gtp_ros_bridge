@@ -1,4 +1,4 @@
-# gtp_ros_bridge
+# gtp_ros_bridge and msgs
 A bridge between GTP and ROS
 
 Need to be installed: MsgConnector and jsoncpp
