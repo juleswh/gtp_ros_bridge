@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(gtp_ros_bridge)
 
+#needed to use pkgconfig
+find_package(PkgConfig)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -17,7 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
+pkg_check_modules(jsoncpp REQUIRED jsoncpp)
+pkg_check_modules(msgconnector REQUIRED msgconnector)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -110,7 +114,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES gtp_ros_bridge
   CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs gtp_ros_msg message_runtime
-#  DEPENDS system_lib
+  DEPENDS jsoncpp msgconnector 
 )
 
 ###########
@@ -121,7 +125,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  ${catkin_INCLUDE_DIRS} include $ENV{ROBOTPKG_BASE}/include/msgconnector
+  ${catkin_INCLUDE_DIRS} ${jsoncpp_INCLUDE_DIRS} ${msgconnector_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -134,26 +138,29 @@ include_directories(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(gtp_ros_bridge ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+## needed by pkgconfig to find msgconnectorClient library
+link_directories(${msgconnector_LIBRARY_DIRS})
+
 ## Declare a C++ executable
- add_executable(gtp_ros_bridge_node src/gtp_ros_bridge_node.cpp)
+add_executable(gtp_ros_bridge_node src/gtp_ros_bridge_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
- add_dependencies(gtp_ros_bridge_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(gtp_ros_bridge_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(gtp_ros_bridge_node
+target_link_libraries(gtp_ros_bridge_node
    ${catkin_LIBRARIES}
-    $ENV{ROBOTPKG_BASE}/lib/libmsgconnectorClient.so
-    /usr/lib/libjsoncpp.so
-    )   
+   ${msgconnector_LIBRARIES}
+   ${jsoncpp_LIBRARIES}
+   )   
     
- add_executable(gtp_ros_bridge_test_client src/gtp_ros_bridge_test_client.cpp)
+add_executable(gtp_ros_bridge_test_client src/gtp_ros_bridge_test_client.cpp)
 
- target_link_libraries( 
+target_link_libraries( 
   gtp_ros_bridge_test_client
   ${catkin_LIBRARIES}
-  /usr/lib/libjsoncpp.so
+  ${jsoncpp_LIBRARIES}
  )
 
  add_dependencies(gtp_ros_bridge_test_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
