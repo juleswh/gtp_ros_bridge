@@ -274,6 +274,49 @@ public:
         
         t.name = "traj";
         
+       
+  
+        t.traj.joint_names.push_back("dummy0");
+        t.traj.joint_names.push_back("dummy1");
+        t.traj.joint_names.push_back("dummy2");
+        t.traj.joint_names.push_back("dummy3");
+        t.traj.joint_names.push_back("dummy4");
+        t.traj.joint_names.push_back("dummy5");
+        t.traj.joint_names.push_back("navX");
+        t.traj.joint_names.push_back("navY");
+        t.traj.joint_names.push_back("dummyZ");
+        t.traj.joint_names.push_back("dummyRX");
+        t.traj.joint_names.push_back("dummyRY");
+        t.traj.joint_names.push_back("RotTheta");
+        t.traj.joint_names.push_back("torso_lift_joint");
+        t.traj.joint_names.push_back("head_pan_joint");
+        t.traj.joint_names.push_back("head_tilt_joint");
+        t.traj.joint_names.push_back("laser_tilt_mount_joint");
+        
+        t.traj.joint_names.push_back("r_shoulder_pan_joint");
+        t.traj.joint_names.push_back("r_shoulder_lift_joint");
+        t.traj.joint_names.push_back("r_upper_arm_roll_joint");
+        t.traj.joint_names.push_back("r_elbow_flex_joint");
+        t.traj.joint_names.push_back("r_forearm_roll_joint");
+        t.traj.joint_names.push_back("r_wrist_flex_joint");
+        t.traj.joint_names.push_back("r_wrist_roll_joint");
+        t.traj.joint_names.push_back("r_gripper_joint");
+        
+        t.traj.joint_names.push_back("dummyGripper");
+        
+        
+        t.traj.joint_names.push_back("l_shoulder_pan_joint");
+        t.traj.joint_names.push_back("l_shoulder_lift_joint");
+        t.traj.joint_names.push_back("l_upper_arm_roll_joint");
+        t.traj.joint_names.push_back("l_elbow_flex_joint");
+        t.traj.joint_names.push_back("l_forearm_roll_joint");
+        t.traj.joint_names.push_back("l_wrist_flex_joint");
+        t.traj.joint_names.push_back("l_wrist_roll_joint");
+        t.traj.joint_names.push_back("l_gripper_joint");
+        
+        
+        
+        
         //t.traj.points.
         trajectory.publish(t);
         
