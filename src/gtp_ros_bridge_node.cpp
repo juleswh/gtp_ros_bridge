@@ -11,8 +11,16 @@
 #include <gtp_ros_msg/GTPTraj.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
 
+#include <toaster_msgs/ObjectList.h>
+#include <toaster_msgs/RobotList.h>
+#include <toaster_msgs/HumanList.h>
+
 msgClient client;
 ros::Publisher trajectory;
+
+bool updateObjectList = false;
+bool updateRobotList = false;
+bool updateHumanList = false;
 
 class GtpRosBridge
 {
@@ -274,7 +282,8 @@ public:
         
         t.name = "traj";
         
-       
+       //TODO: check the robot name
+       //TODO: do the same thing for navigation
   
         t.traj.joint_names.push_back("dummy0");
         t.traj.joint_names.push_back("dummy1");
@@ -326,7 +335,26 @@ public:
     }
     else if (goal->req.requestType == "update")
     {
-       
+       updateObjectList = true;
+       while (updateObjectList)
+       {
+         usleep(500000);
+         ROS_INFO("Waiting for objects updates");
+       }
+       updateRobotList = true;
+       while (updateRobotList)
+       {
+         usleep(500000);
+         ROS_INFO("Waiting for robots updates");
+       }
+       updateHumanList = true;
+       while (updateHumanList)
+       {
+         usleep(500000);
+         ROS_INFO("Waiting for humans updates");
+       }
+       result_.ans.success = true;
+       as_.setSucceeded(result_);
     }
     else
     {
@@ -344,10 +372,142 @@ public:
 
 
 
-//void chatterCallback(const std_msgs::String::ConstPtr& msg)
-//{
-//  ROS_INFO("I heard: [%s]", msg->data.c_str());
-//}
+void updateObjectPosesCB(const toaster_msgs::ObjectList::ConstPtr& msg)
+{
+  if (updateObjectList)
+  {
+    Json::Value request(Json::objectValue);
+    Json::Value input(Json::arrayValue);
+    for (unsigned int i = 0; i < msg->objectList.size(); i++)
+    {
+      Json::Value obj(Json::objectValue);
+      Json::Value conf(Json::arrayValue);
+      conf.append(msg->objectList[i].meEntity.positionX);
+      conf.append(msg->objectList[i].meEntity.positionY);
+      conf.append(msg->objectList[i].meEntity.positionZ);
+      
+      conf.append(msg->objectList[i].meEntity.orientationRoll);
+      conf.append(msg->objectList[i].meEntity.orientationPitch);
+      conf.append(msg->objectList[i].meEntity.orientationYaw);
+      
+      obj["name"] = msg->objectList[i].meEntity.id;
+      obj["conf"] = conf;
+
+      input.append(obj);
+      ROS_INFO("I heard about: [%s]", msg->objectList[i].meEntity.id.c_str());
+    }
+    
+    request["UpdateGTPObjects"] = input;
+    
+    Json::FastWriter wrt;
+    client.sendMessage("move3d", wrt.write(request));
+    std::string res = client.getBlockingMessage().second;
+    updateObjectList = false;
+  }
+  //ROS_INFO("I heard about: [%s]", msg->objectList[0].meEntity.id.c_str());
+}
+
+void updateRobotPosesCB(const toaster_msgs::RobotList::ConstPtr& msg)
+{
+  if (updateRobotList)
+  {
+    Json::Value request(Json::objectValue);
+    Json::Value input(Json::arrayValue);
+    for (unsigned int i = 0; i < msg->robotList.size(); i++)
+    {
+      Json::Value rob(Json::objectValue);
+      Json::Value conf(Json::arrayValue);
+      
+      conf.append(msg->robotList[i].meAgent.meEntity.positionX);
+      conf.append(msg->robotList[i].meAgent.meEntity.positionY);
+      conf.append(msg->robotList[i].meAgent.meEntity.positionZ);
+      
+      conf.append(msg->robotList[i].meAgent.meEntity.orientationRoll);
+      conf.append(msg->robotList[i].meAgent.meEntity.orientationPitch);
+      conf.append(msg->robotList[i].meAgent.meEntity.orientationYaw);
+      
+      for (unsigned int j = 0; j < msg->robotList.at(i).meAgent.skeletonJoint.size(); j++)
+      {
+         conf.append(msg->robotList.at(i).meAgent.skeletonJoint.at(j).position);
+      }
+      
+      
+      rob["name"] = msg->robotList[i].meAgent.meEntity.id;
+      rob["conf"] = conf;
+
+      input.append(rob);
+      ROS_INFO("I heard about: [%s]", msg->robotList[i].meAgent.meEntity.id.c_str());
+    }
+    
+    request["UpdateGTPRobots"] = input;
+    
+    Json::FastWriter wrt;
+    client.sendMessage("move3d", wrt.write(request));
+    std::string res = client.getBlockingMessage().second;
+    updateRobotList = false;
+  }
+  //ROS_INFO("I heard about: [%s]", msg->robotList[0].meAgent.meEntity.id.c_str());
+}
+
+void updateHumanPosesCB(const toaster_msgs::HumanList::ConstPtr& msg)
+{
+  if (updateHumanList)
+  {
+    Json::Value request(Json::objectValue);
+    Json::Value input(Json::arrayValue);
+    for (unsigned int i = 0; i < msg->humanList.size(); i++)
+    {
+      Json::Value rob(Json::objectValue);
+      Json::Value conf(Json::arrayValue);
+      
+      conf.append(msg->humanList[i].meAgent.meEntity.positionX);
+      conf.append(msg->humanList[i].meAgent.meEntity.positionY);
+      conf.append(msg->humanList[i].meAgent.meEntity.positionZ);
+      
+      conf.append(msg->humanList[i].meAgent.meEntity.orientationRoll);
+      conf.append(msg->humanList[i].meAgent.meEntity.orientationPitch);
+      conf.append(msg->humanList[i].meAgent.meEntity.orientationYaw);
+      
+      Json::Value joints(Json::objectValue);
+      for (unsigned int j = 0; j < msg->humanList.at(i).meAgent.skeletonJoint.size(); j++)
+      {
+         Json::Value joint(Json::objectValue);
+         Json::Value poseConf(Json::arrayValue);
+         //joint["jointName"] = msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.id;
+         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.positionX);
+         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.positionY);
+         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.positionZ);
+         
+         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.orientationRoll);
+         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.orientationPitch);
+         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.orientationYaw);
+         
+         
+         //joint["pose"] = poseConf;
+         joints[msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.name] = poseConf;
+         //joints.append(joint);
+         
+         //conf.append(msg->robotList.at(i).meAgent.skeletonJoint.at(j).position);
+         
+      }
+      
+      
+      rob["name"] = msg->humanList[i].meAgent.meEntity.id;
+      rob["conf"] = conf;
+      rob["joints"] = joints;
+
+      input.append(rob);
+      ROS_INFO("I heard about: [%s]", msg->humanList[i].meAgent.meEntity.id.c_str());
+    }
+    
+    request["UpdateGTPHumans"] = input;
+    
+    Json::FastWriter wrt;
+    client.sendMessage("move3d", wrt.write(request));
+    std::string res = client.getBlockingMessage().second;
+    updateHumanList = false;
+  }
+}
 
 
 
@@ -367,7 +527,9 @@ int main(int argc, char** argv)
   
 
 
-//  ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback);
+  ros::Subscriber subObj = n.subscribe("/pdg/objectList", 10, updateObjectPosesCB);
+  ros::Subscriber subRob = n.subscribe("/pdg/robotList", 10, updateRobotPosesCB);
+  ros::Subscriber subHum = n.subscribe("/pdg/humanList", 10, updateHumanPosesCB);
 
   client.connect("gtp_ros_node", server, port);
   if(client.isConnected())
@@ -409,10 +571,6 @@ int main(int argc, char** argv)
   {
      ROS_INFO("Failed to connect to geometric planner, abort");
   }
-  
-  
-  
-
 
   return 0;
 }

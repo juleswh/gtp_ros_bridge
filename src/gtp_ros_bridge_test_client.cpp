@@ -273,6 +273,7 @@ int main (int argc, char **argv)
   }
   else if (requesttype == "update")
   {
+      ac.sendGoal(goal);
   }
   else
   {
