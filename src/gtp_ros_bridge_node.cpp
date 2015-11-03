@@ -272,7 +272,7 @@ public:
         for (unsigned int i = 0; i < root["GetGTPTraj"]["confs"].size(); i++)
         {
             trajectory_msgs::JointTrajectoryPoint Jtpt;
-            for (unsigned int j = 0; j < root["GetGTPTraj"]["confs"][i].size(); j++)
+            for (unsigned int j = 6; j < root["GetGTPTraj"]["confs"][i].size(); j++)
             {
                Jtpt.positions.push_back(root["GetGTPTraj"]["confs"][i][j].asDouble());
             }
@@ -284,45 +284,57 @@ public:
         
        //TODO: check the robot name
        //TODO: do the same thing for navigation
-  
-        t.traj.joint_names.push_back("dummy0");
-        t.traj.joint_names.push_back("dummy1");
-        t.traj.joint_names.push_back("dummy2");
-        t.traj.joint_names.push_back("dummy3");
-        t.traj.joint_names.push_back("dummy4");
-        t.traj.joint_names.push_back("dummy5");
-        t.traj.joint_names.push_back("navX");
-        t.traj.joint_names.push_back("navY");
-        t.traj.joint_names.push_back("dummyZ");
-        t.traj.joint_names.push_back("dummyRX");
-        t.traj.joint_names.push_back("dummyRY");
-        t.traj.joint_names.push_back("RotTheta");
-        t.traj.joint_names.push_back("torso_lift_joint");
-        t.traj.joint_names.push_back("head_pan_joint");
-        t.traj.joint_names.push_back("head_tilt_joint");
-        t.traj.joint_names.push_back("laser_tilt_mount_joint");
         
-        t.traj.joint_names.push_back("r_shoulder_pan_joint");
-        t.traj.joint_names.push_back("r_shoulder_lift_joint");
-        t.traj.joint_names.push_back("r_upper_arm_roll_joint");
-        t.traj.joint_names.push_back("r_elbow_flex_joint");
-        t.traj.joint_names.push_back("r_forearm_roll_joint");
-        t.traj.joint_names.push_back("r_wrist_flex_joint");
-        t.traj.joint_names.push_back("r_wrist_roll_joint");
-        t.traj.joint_names.push_back("r_gripper_joint");
-        
-        t.traj.joint_names.push_back("dummyGripper");
-        
-        
-        t.traj.joint_names.push_back("l_shoulder_pan_joint");
-        t.traj.joint_names.push_back("l_shoulder_lift_joint");
-        t.traj.joint_names.push_back("l_upper_arm_roll_joint");
-        t.traj.joint_names.push_back("l_elbow_flex_joint");
-        t.traj.joint_names.push_back("l_forearm_roll_joint");
-        t.traj.joint_names.push_back("l_wrist_flex_joint");
-        t.traj.joint_names.push_back("l_wrist_roll_joint");
-        t.traj.joint_names.push_back("l_gripper_joint");
-        
+        if (root["GetGTPTraj"]["agent"] == "PR2_ROBOT")
+        {
+            t.traj.joint_names.push_back("navX");
+            t.traj.joint_names.push_back("navY");
+            t.traj.joint_names.push_back("dummyZ");
+            t.traj.joint_names.push_back("dummyRX");
+            t.traj.joint_names.push_back("dummyRY");
+            t.traj.joint_names.push_back("RotTheta");
+            t.traj.joint_names.push_back("torso_lift_joint");
+            t.traj.joint_names.push_back("head_pan_joint");
+            t.traj.joint_names.push_back("head_tilt_joint");
+            t.traj.joint_names.push_back("laser_tilt_mount_joint");
+            
+            t.traj.joint_names.push_back("r_shoulder_pan_joint");
+            t.traj.joint_names.push_back("r_shoulder_lift_joint");
+            t.traj.joint_names.push_back("r_upper_arm_roll_joint");
+            t.traj.joint_names.push_back("r_elbow_flex_joint");
+            t.traj.joint_names.push_back("r_forearm_roll_joint");
+            t.traj.joint_names.push_back("r_wrist_flex_joint");
+            t.traj.joint_names.push_back("r_wrist_roll_joint");
+            t.traj.joint_names.push_back("r_gripper_joint");
+            
+            t.traj.joint_names.push_back("dummyGripper");
+            
+            
+            t.traj.joint_names.push_back("l_shoulder_pan_joint");
+            t.traj.joint_names.push_back("l_shoulder_lift_joint");
+            t.traj.joint_names.push_back("l_upper_arm_roll_joint");
+            t.traj.joint_names.push_back("l_elbow_flex_joint");
+            t.traj.joint_names.push_back("l_forearm_roll_joint");
+            t.traj.joint_names.push_back("l_wrist_flex_joint");
+            t.traj.joint_names.push_back("l_wrist_roll_joint");
+            t.traj.joint_names.push_back("l_gripper_joint");
+        }
+        else if (root["GetGTPTraj"]["agent"] == "KUKA_ROBOT")
+        {
+            t.traj.joint_names.push_back("navX");
+            t.traj.joint_names.push_back("navY");
+            t.traj.joint_names.push_back("dummyZ");
+            t.traj.joint_names.push_back("dummyRX");
+            t.traj.joint_names.push_back("dummyRY");
+            t.traj.joint_names.push_back("RotTheta");
+            t.traj.joint_names.push_back("arm0");
+            t.traj.joint_names.push_back("arm1");
+            t.traj.joint_names.push_back("arm2");
+            t.traj.joint_names.push_back("arm3");
+            t.traj.joint_names.push_back("arm4");
+            t.traj.joint_names.push_back("arm5");
+            t.traj.joint_names.push_back("arm6");
+        }    
         
         
         
