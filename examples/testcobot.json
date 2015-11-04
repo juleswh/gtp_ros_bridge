@@ -1,0 +1,27 @@
+{
+    "requestType":"planning",
+    "actionType":"pick",
+    "input":
+    {
+        "agents":
+        {
+            "agent1":
+            {
+                "key":"mainAgent",
+                "value":"KUKA_ROBOT"
+            }
+        },
+        "objects":
+        {
+            "object1":
+            {
+                "key":"mainObject",
+                "value":"GLUE_BOTTLE"
+            }
+        }
+    },
+    "previousId":0,
+    "previousAltId":0
+    
+}
+

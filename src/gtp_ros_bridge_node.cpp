@@ -321,12 +321,6 @@ public:
         }
         else if (root["GetGTPTraj"]["agent"] == "KUKA_ROBOT")
         {
-            t.traj.joint_names.push_back("navX");
-            t.traj.joint_names.push_back("navY");
-            t.traj.joint_names.push_back("dummyZ");
-            t.traj.joint_names.push_back("dummyRX");
-            t.traj.joint_names.push_back("dummyRY");
-            t.traj.joint_names.push_back("RotTheta");
             t.traj.joint_names.push_back("arm0");
             t.traj.joint_names.push_back("arm1");
             t.traj.joint_names.push_back("arm2");
