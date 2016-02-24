@@ -36,8 +36,8 @@
             }
         }
     },
-    "previousId":0,
-    "previousAltId":0
+    "previousId":-1,
+    "previousAltId":-1
     
 }
 

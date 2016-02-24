@@ -240,7 +240,7 @@ int main (int argc, char **argv)
       return 0;
       
   }
-  else if (requesttype == "load")
+  else if (requesttype == "load" || "loadAndExecute")
   {
       int actionId = root.get("actionId", -1 ).asInt();
       if (actionId == -1)
@@ -272,6 +272,10 @@ int main (int argc, char **argv)
   
   }
   else if (requesttype == "update")
+  {
+      ac.sendGoal(goal);
+  }
+  else if (requesttype == "test")
   {
       ac.sendGoal(goal);
   }

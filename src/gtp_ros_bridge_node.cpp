@@ -15,12 +15,17 @@
 #include <toaster_msgs/RobotList.h>
 #include <toaster_msgs/HumanList.h>
 
+
 msgClient client;
 ros::Publisher trajectory;
 
 bool updateObjectList = false;
 bool updateRobotList = false;
 bool updateHumanList = false;
+
+
+std::map<std::string,std::string> jointCorrespondances;
+
 
 class GtpRosBridge
 {
@@ -34,6 +39,7 @@ protected:
   gtp_ros_msg::requestFeedback feedback_;
   gtp_ros_msg::requestResult result_;
   
+  
 
   
 
@@ -44,11 +50,35 @@ public:
     as_(nh_, "gtp_ros_server", boost::bind(&GtpRosBridge::executeCB, this, _1), false),
     action_name_(name)
   {
-    as_.start();
+  
+        jointCorrespondances["torso_lift_link"] = "Torso";
+        jointCorrespondances["head_pan_link"] = "pan_cam";
+        jointCorrespondances["head_tilt_link"] = "tilt_cam";
+        jointCorrespondances["laser_tilt_mount_link"] = "laser-jnt";
+        jointCorrespondances["r_shoulder_pan_link"] = "right-Arm1";
+        jointCorrespondances["r_shoulder_lift_link"] = "right-Arm2";
+        jointCorrespondances["r_upper_arm_roll_link"] = "right-Arm3";
+        jointCorrespondances["r_elbow_flex_link"] = "right-Arm4";
+        jointCorrespondances["r_forearm_roll_link"] = "right-Arm5";
+        jointCorrespondances["r_wrist_flex_link"] = "right-Arm6";
+        jointCorrespondances["r_wrist_roll_link"] = "right-Arm7";
+        jointCorrespondances["r_gripper_link"] = "fingerJointGripper_0";
+        jointCorrespondances["l_shoulder_pan_link"] = "left-Arm1";
+        jointCorrespondances["l_shoulder_lift_link"] = "left-Arm2";
+        jointCorrespondances["l_upper_arm_roll_link"] = "left-Arm3";
+        jointCorrespondances["l_elbow_flex_link"] = "left-Arm4";
+        jointCorrespondances["l_forearm_roll_link"] = "left-Arm5";
+        jointCorrespondances["l_wrist_flex_link"] = "left-Arm6";
+        jointCorrespondances["l_wrist_roll_link"] = "left-Arm7";
+        jointCorrespondances["l_gripper_link"] = "fingerJointGripper_1";
+        
+      
+        as_.start();
   }
 
   ~GtpRosBridge(void)
   {
+     delete traj_client_;
   }
 
   void executeCB(const gtp_ros_msg::requestGoalConstPtr &goal)
@@ -163,9 +193,10 @@ public:
             return;
         }
         
-        
+        ROS_INFO("%s", root.toStyledString().c_str());
         
         tmpVal = root.get("PlanGTPTask", nullval );
+        
         if (tmpVal == nullval)
         {
            ROS_INFO("Failed to find PlanGTPTask");
@@ -175,8 +206,10 @@ public:
         }
         
 
-        std::string report = tmpVal.get("returnReport", "Null" ).asString();
-        
+        std::string report = "";// = tmpVal.get("returnReport", "Null" ).asString();
+        if (tmpVal.isMember("planningInformation") && tmpVal["planningInformation"].isMember("returnReport"))
+            report = tmpVal["planningInformation"]["returnReport"].asString();
+            
         
         if (report == "OK")
            result_.ans.success = true;
@@ -275,6 +308,8 @@ public:
             for (unsigned int j = 6; j < root["GetGTPTraj"]["confs"][i].size(); j++)
             {
                Jtpt.positions.push_back(root["GetGTPTraj"]["confs"][i][j].asDouble());
+               Jtpt.velocities.push_back(0);
+               Jtpt.accelerations.push_back(0);
             }
             t.traj.points.push_back(Jtpt);
         }
@@ -361,6 +396,7 @@ public:
        }
        result_.ans.success = true;
        as_.setSucceeded(result_);
+       ROS_INFO("Done updating");
     }
     else
     {
@@ -372,8 +408,6 @@ public:
     }
         
   }
-
-
 };
 
 
@@ -422,29 +456,44 @@ void updateRobotPosesCB(const toaster_msgs::RobotList::ConstPtr& msg)
     for (unsigned int i = 0; i < msg->robotList.size(); i++)
     {
       Json::Value rob(Json::objectValue);
+      Json::Value dofs(Json::objectValue);
       Json::Value conf(Json::arrayValue);
+      
       
       conf.append(msg->robotList[i].meAgent.meEntity.positionX);
       conf.append(msg->robotList[i].meAgent.meEntity.positionY);
-      conf.append(msg->robotList[i].meAgent.meEntity.positionZ);
+      conf.append(0);
       
-      conf.append(msg->robotList[i].meAgent.meEntity.orientationRoll);
-      conf.append(msg->robotList[i].meAgent.meEntity.orientationPitch);
+      conf.append(0);
+      conf.append(0);
       conf.append(msg->robotList[i].meAgent.meEntity.orientationYaw);
+      
+      //Json::Value joint0(Json::objectValue);
+      dofs["base"] = conf;
       
       for (unsigned int j = 0; j < msg->robotList.at(i).meAgent.skeletonJoint.size(); j++)
       {
-         conf.append(msg->robotList.at(i).meAgent.skeletonJoint.at(j).position);
+         //Json::Value oneJoint(Json::objectValue);
+         dofs[jointCorrespondances[msg->robotList.at(i).meAgent.skeletonJoint.at(j).meEntity.name]] = msg->robotList.at(i).meAgent.skeletonJoint.at(j).position;
+         std::cout << msg->robotList.at(i).meAgent.skeletonJoint.at(j).meEntity.name << std::endl;
+         std::cout << jointCorrespondances[msg->robotList.at(i).meAgent.skeletonJoint.at(j).meEntity.name] << std::endl;
+         std::cout << msg->robotList.at(i).meAgent.skeletonJoint.at(j).position << std::endl;
+         
+         //conf.append(msg->robotList.at(i).meAgent.skeletonJoint.at(j).position);
       }
       
       
-      rob["name"] = msg->robotList[i].meAgent.meEntity.id;
-      rob["conf"] = conf;
+
+      
+      
+      rob["name"] = msg->robotList[i].meAgent.meEntity.name;
+      rob["conf"] = dofs;
 
       input.append(rob);
       ROS_INFO("I heard about: [%s]", msg->robotList[i].meAgent.meEntity.id.c_str());
     }
     
+    ROS_INFO("I heard about: [%s]", input.toStyledString().c_str());
     request["UpdateGTPRobots"] = input;
     
     Json::FastWriter wrt;
