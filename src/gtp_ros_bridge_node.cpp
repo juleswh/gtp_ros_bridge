@@ -387,7 +387,7 @@ public:
         
         input["taskId"] = (int)goal->req.loadAction.actionId;
         input["alternativeId"] = (int)goal->req.loadAction.alternativeId;
-        input["subTrajId"] = (int)goal->req.loadAction.alternativeId;
+        input["subTrajId"] = (int)goal->req.loadSubTraj;
         request["GetGTPTraj"] = input;
         
         client.sendMessage("move3d", wrt.write(request));
