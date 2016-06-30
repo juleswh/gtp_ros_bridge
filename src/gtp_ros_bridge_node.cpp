@@ -11,9 +11,10 @@
 #include <gtp_ros_msg/GTPTraj.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
 
-#include <toaster_msgs/ObjectList.h>
-#include <toaster_msgs/RobotList.h>
-#include <toaster_msgs/HumanList.h>
+#include <toaster_msgs/ObjectListStamped.h>
+#include <toaster_msgs/RobotListStamped.h>
+#include <toaster_msgs/HumanListStamped.h>
+#include <tf/transform_datatypes.h>
 
 #include <pr2_controllers_msgs/JointTrajectoryAction.h>
 #include <actionlib/client/simple_action_client.h>
@@ -592,7 +593,7 @@ public:
 
 
 
-void updateObjectPosesCB(const toaster_msgs::ObjectList::ConstPtr& msg)
+void updateObjectPosesCB(const toaster_msgs::ObjectListStamped::ConstPtr& msg)
 {
   if (updateObjectList)
   {
@@ -602,13 +603,17 @@ void updateObjectPosesCB(const toaster_msgs::ObjectList::ConstPtr& msg)
     {
       Json::Value obj(Json::objectValue);
       Json::Value conf(Json::arrayValue);
-      conf.append(msg->objectList[i].meEntity.positionX);
-      conf.append(msg->objectList[i].meEntity.positionY);
-      conf.append(msg->objectList[i].meEntity.positionZ);
+      conf.append(msg->objectList[i].meEntity.pose.position.x);
+      conf.append(msg->objectList[i].meEntity.pose.position.y);
+      conf.append(msg->objectList[i].meEntity.pose.position.z);
       
-      conf.append(msg->objectList[i].meEntity.orientationRoll);
-      conf.append(msg->objectList[i].meEntity.orientationPitch);
-      conf.append(msg->objectList[i].meEntity.orientationYaw);
+      tf::Quaternion q(msg->objectList[i].meEntity.pose.orientation.x, msg->objectList[i].meEntity.pose.orientation.y, msg->objectList[i].meEntity.pose.orientation.z, msg->objectList[i].meEntity.pose.orientation.w);
+      tf::Matrix3x3 m(q);      
+      double roll, pitch, yaw;
+      m.getRPY(roll, pitch, yaw);
+      conf.append(roll);
+      conf.append(pitch);
+      conf.append(yaw);
       
       obj["name"] = msg->objectList[i].meEntity.id;
       obj["conf"] = conf;
@@ -627,7 +632,7 @@ void updateObjectPosesCB(const toaster_msgs::ObjectList::ConstPtr& msg)
   //ROS_INFO("I heard about: [%s]", msg->objectList[0].meEntity.id.c_str());
 }
 
-void updateRobotPosesCB(const toaster_msgs::RobotList::ConstPtr& msg)
+void updateRobotPosesCB(const toaster_msgs::RobotListStamped::ConstPtr& msg)
 {
   if (updateRobotList)
   {
@@ -640,13 +645,17 @@ void updateRobotPosesCB(const toaster_msgs::RobotList::ConstPtr& msg)
       Json::Value conf(Json::arrayValue);
       
       
-      conf.append(msg->robotList[i].meAgent.meEntity.positionX);
-      conf.append(msg->robotList[i].meAgent.meEntity.positionY);
+      conf.append(msg->robotList[i].meAgent.meEntity.pose.position.x);
+      conf.append(msg->robotList[i].meAgent.meEntity.pose.position.y);
       conf.append(0);
       
+      tf::Quaternion q(msg->robotList[i].meAgent.meEntity.pose.orientation.x, msg->robotList[i].meAgent.meEntity.pose.orientation.y, msg->robotList[i].meAgent.meEntity.pose.orientation.z, msg->robotList[i].meAgent.meEntity.pose.orientation.w);
+      tf::Matrix3x3 m(q);      
+      double roll, pitch, yaw;
+      m.getRPY(roll, pitch, yaw);
       conf.append(0);
       conf.append(0);
-      conf.append(msg->robotList[i].meAgent.meEntity.orientationYaw);
+      conf.append(yaw);
       
       //Json::Value joint0(Json::objectValue);
       dofs["base"] = conf;
@@ -684,7 +693,7 @@ void updateRobotPosesCB(const toaster_msgs::RobotList::ConstPtr& msg)
   //ROS_INFO("I heard about: [%s]", msg->robotList[0].meAgent.meEntity.id.c_str());
 }
 
-void updateHumanPosesCB(const toaster_msgs::HumanList::ConstPtr& msg)
+void updateHumanPosesCB(const toaster_msgs::HumanListStamped::ConstPtr& msg)
 {
   if (updateHumanList)
   {
@@ -695,13 +704,17 @@ void updateHumanPosesCB(const toaster_msgs::HumanList::ConstPtr& msg)
       Json::Value rob(Json::objectValue);
       Json::Value conf(Json::arrayValue);
       
-      conf.append(msg->humanList[i].meAgent.meEntity.positionX);
-      conf.append(msg->humanList[i].meAgent.meEntity.positionY);
-      conf.append(msg->humanList[i].meAgent.meEntity.positionZ);
+      conf.append(msg->humanList[i].meAgent.meEntity.pose.position.x);
+      conf.append(msg->humanList[i].meAgent.meEntity.pose.position.y);
+      conf.append(msg->humanList[i].meAgent.meEntity.pose.position.z);
       
-      conf.append(msg->humanList[i].meAgent.meEntity.orientationRoll);
-      conf.append(msg->humanList[i].meAgent.meEntity.orientationPitch);
-      conf.append(msg->humanList[i].meAgent.meEntity.orientationYaw);
+      tf::Quaternion q(msg->humanList[i].meAgent.meEntity.pose.orientation.x, msg->humanList[i].meAgent.meEntity.pose.orientation.y, msg->humanList[i].meAgent.meEntity.pose.orientation.z, msg->humanList[i].meAgent.meEntity.pose.orientation.w);
+      tf::Matrix3x3 m(q);      
+      double roll, pitch, yaw;
+      m.getRPY(roll, pitch, yaw);
+      conf.append(roll);
+      conf.append(pitch);
+      conf.append(yaw);
       
       Json::Value joints(Json::objectValue);
       for (unsigned int j = 0; j < msg->humanList.at(i).meAgent.skeletonJoint.size(); j++)
@@ -709,13 +722,17 @@ void updateHumanPosesCB(const toaster_msgs::HumanList::ConstPtr& msg)
          Json::Value joint(Json::objectValue);
          Json::Value poseConf(Json::arrayValue);
          //joint["jointName"] = msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.id;
-         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.positionX);
-         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.positionY);
-         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.positionZ);
+         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.position.x);
+         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.position.y);
+         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.position.z);
          
-         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.orientationRoll);
-         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.orientationPitch);
-         poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.orientationYaw);
+         tf::Quaternion q(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.orientation.x, msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.orientation.y, msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.orientation.z, msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.orientation.w);
+         tf::Matrix3x3 m(q);      
+         double roll, pitch, yaw;
+         m.getRPY(roll, pitch, yaw);
+         poseConf.append(roll);
+         poseConf.append(pitch);
+         poseConf.append(yaw);
          
          
          //joint["pose"] = poseConf;
