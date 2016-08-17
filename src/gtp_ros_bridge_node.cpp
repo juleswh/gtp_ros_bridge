@@ -18,6 +18,7 @@
 
 #include <pr2_controllers_msgs/JointTrajectoryAction.h>
 #include <actionlib/client/simple_action_client.h>
+#include <Eigen/Geometry>
 
 msgClient client;
 ros::Publisher trajectory;
@@ -483,16 +484,14 @@ void updateObjectPosesCB(const toaster_msgs::ObjectListStamped::ConstPtr& msg)
       conf.append(msg->objectList[i].meEntity.pose.position.y);
       conf.append(msg->objectList[i].meEntity.pose.position.z);
       
-      tf::Quaternion q(msg->objectList[i].meEntity.pose.orientation.x,
+      Eigen::Quaterniond q(msg->objectList[i].meEntity.pose.orientation.w,
+                         msg->objectList[i].meEntity.pose.orientation.x,
                        msg->objectList[i].meEntity.pose.orientation.y,
-                       msg->objectList[i].meEntity.pose.orientation.z,
-                       msg->objectList[i].meEntity.pose.orientation.w);
-      tf::Matrix3x3 m(q);      
-      double roll, pitch, yaw;
-      m.getRPY(roll, pitch, yaw);
-      conf.append(roll);
-      conf.append(pitch);
-      conf.append(yaw);
+                         msg->objectList[i].meEntity.pose.orientation.z);
+      Eigen::Vector3d angles=q.matrix().eulerAngles(0,1,2);
+      for(uint r=0;r<3;r++)
+          conf.append(angles[r]);
+
       
       obj["name"] = msg->objectList[i].meEntity.id;
       obj["conf"] = conf;
@@ -528,16 +527,13 @@ void updateRobotPosesCB(const toaster_msgs::RobotListStamped::ConstPtr& msg)
       conf.append(msg->robotList[i].meAgent.meEntity.pose.position.y);
       conf.append(0);
       
-      tf::Quaternion q(msg->robotList[i].meAgent.meEntity.pose.orientation.x,
+      Eigen::Quaterniond q(msg->robotList[i].meAgent.meEntity.pose.orientation.w,
+                           msg->robotList[i].meAgent.meEntity.pose.orientation.x,
                        msg->robotList[i].meAgent.meEntity.pose.orientation.y,
-                       msg->robotList[i].meAgent.meEntity.pose.orientation.z,
-                       msg->robotList[i].meAgent.meEntity.pose.orientation.w);
-      tf::Matrix3x3 m(q);      
-      double roll, pitch, yaw;
-      m.getRPY(roll, pitch, yaw);
-      conf.append(0);
-      conf.append(0);
-      conf.append(yaw);
+                           msg->robotList[i].meAgent.meEntity.pose.orientation.z);
+      Eigen::Vector3d angles=q.matrix().eulerAngles(0,1,2);
+      for(uint r=0;r<3;r++)
+          conf.append(angles[r]);
       
       //Json::Value joint0(Json::objectValue);
       dofs["base"] = conf;
@@ -590,13 +586,13 @@ void updateHumanPosesCB(const toaster_msgs::HumanListStamped::ConstPtr& msg)
       conf.append(msg->humanList[i].meAgent.meEntity.pose.position.y);
       conf.append(msg->humanList[i].meAgent.meEntity.pose.position.z);
       
-      tf::Quaternion q(msg->humanList[i].meAgent.meEntity.pose.orientation.x, msg->humanList[i].meAgent.meEntity.pose.orientation.y, msg->humanList[i].meAgent.meEntity.pose.orientation.z, msg->humanList[i].meAgent.meEntity.pose.orientation.w);
-      tf::Matrix3x3 m(q);      
-      double roll, pitch, yaw;
-      m.getRPY(roll, pitch, yaw);
-      conf.append(roll);
-      conf.append(pitch);
-      conf.append(yaw);
+      Eigen::Quaterniond q(msg->humanList[i].meAgent.meEntity.pose.orientation.w,
+                           msg->humanList[i].meAgent.meEntity.pose.orientation.x,
+                           msg->humanList[i].meAgent.meEntity.pose.orientation.y,
+                           msg->humanList[i].meAgent.meEntity.pose.orientation.z);
+      Eigen::Vector3d angles=q.matrix().eulerAngles(0,1,2);
+      for(uint r=0;r<3;r++)
+          conf.append(angles[r]);
       
       Json::Value joints(Json::objectValue);
       for (unsigned int j = 0; j < msg->humanList.at(i).meAgent.skeletonJoint.size(); j++)
@@ -608,16 +604,13 @@ void updateHumanPosesCB(const toaster_msgs::HumanListStamped::ConstPtr& msg)
          poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.position.y);
          poseConf.append(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.position.z);
          
-         tf::Quaternion q(msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.orientation.x,
-                          msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.orientation.y,
-                          msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.orientation.z,
-                          msg->humanList.at(i).meAgent.skeletonJoint.at(j).meEntity.pose.orientation.w);
-         tf::Matrix3x3 m(q);      
-         double roll, pitch, yaw;
-         m.getRPY(roll, pitch, yaw);
-         poseConf.append(roll);
-         poseConf.append(pitch);
-         poseConf.append(yaw);
+         Eigen::Quaterniond q(msg->humanList[i].meAgent.skeletonJoint.at(j).meEntity.pose.orientation.w,
+                              msg->humanList[i].meAgent.skeletonJoint.at(j).meEntity.pose.orientation.x,
+                              msg->humanList[i].meAgent.skeletonJoint.at(j).meEntity.pose.orientation.y,
+                              msg->humanList[i].meAgent.skeletonJoint.at(j).meEntity.pose.orientation.z);
+         Eigen::Vector3d angles=q.matrix().eulerAngles(0,1,2);
+         for(uint r=0;r<3;r++)
+             poseConf.append(angles[r]);
          
          
          //joint["pose"] = poseConf;

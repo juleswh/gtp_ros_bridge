@@ -3,6 +3,8 @@ project(gtp_ros_bridge)
 
 #needed to use pkgconfig
 find_package(PkgConfig)
+find_package(cmake_modules REQUIRED)
+find_package(Eigen REQUIRED)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -125,7 +127,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  ${catkin_INCLUDE_DIRS} ${jsoncpp_INCLUDE_DIRS} ${msgconnector_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS} ${jsoncpp_INCLUDE_DIRS} ${msgconnector_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
